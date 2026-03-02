@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>MODULE 02: THE BOOK v1.3</title>
+<title>MODULE 02: THE BOOK v1.4</title>
 <style>
     :root {
         --win-bg: #c0c0c0; --win-high: #ffffff; --win-shadow: #808080;
@@ -64,12 +64,12 @@
     <div class="header-dashboard">
         <div class="logo-block">
             <div class="logo-main">ATLAS: THE BOOK</div>
-            <div class="logo-sub">RETAIL ADVISORY TERMINAL v1.3</div>
+            <div class="logo-sub">RETAIL ADVISORY TERMINAL v1.4</div>
         </div>
         
         <div class="window" style="margin: 0; width: 250px; justify-content: center;">
             <div class="content-area" style="display: flex; flex-direction: column; justify-content: center; text-align: center;">
-                <div class="metric-label">TIME_ALLOCATION</div>
+                <div class="metric-label">PRODUCTION CAPACITY<br><span style="font-size:10px; color:#666;">(Monthly revenue-generating time)</span></div>
                 <div style="font-size: 20px; font-weight: bold; font-family: 'Courier New';">
                     <span id="time_used" style="color:#000;">0</span> / <span id="time_max">100</span> HRS
                 </div>
@@ -91,8 +91,8 @@
                     <div class="metric-label">TOTAL BOOK (AUM)</div>
                     <div class="metric-lg" id="val_aum_total">$0</div>
                 </div>
-                <div class="ledger-row"><span>Fee-Based (1% Yield):</span><span id="val_aum_fee" style="font-weight:bold; color:#006400;">$0</span></div>
-                <div class="ledger-row"><span>A-Shares (0.25% Yield):</span><span id="val_aum_trans" style="font-weight:bold; color:#8b0000;">$0</span></div>
+                <div class="ledger-row"><span>Fee-Based (1% Trail):</span><span id="val_aum_fee" style="font-weight:bold; color:#006400;">$0</span></div>
+                <div class="ledger-row"><span>A-Shares (Front Load + 0.5% Trail):</span><span id="val_aum_trans" style="font-weight:bold; color:#8b0000;">$0</span></div>
                 
                 <div style="margin-top: 12px; display:flex; justify-content:space-between; align-items:flex-end;">
                     <div>
@@ -187,7 +187,7 @@
                 <div style="margin-top: 12px; border-top: 2px solid #888; padding-top: 8px;">
                     <div class="metric-label" style="text-align:center; margin-bottom:4px;">PRODUCT MIX (PIPELINE CONVERSION)</div>
                     <div style="display:flex; justify-content:space-between; font-size:10px; font-weight:bold; color:#8b0000;">
-                        <span>A-SHARES (4% Upfront)</span><span style="color:#006400;">FEE-BASED (1% Trail)</span>
+                        <span>A-Shares (Front Load + Trail)</span><span style="color:#006400;">Fee-Based (1% Trail)</span>
                     </div>
                     <input type="range" id="mix_slider" min="0" max="100" value="50" oninput="update_mix_ui()" style="width: 100%; margin: 6px 0;">
                     <div style="display:flex; justify-content:space-between; font-family:'Courier New', monospace; font-weight:bold; font-size:12px;">
@@ -232,7 +232,7 @@
                 <div class="staff-card">
                     <div>
                         <div style="font-weight:bold; font-size:13px;">Branch Office Administrator</div>
-                        <div style="font-size:10px; color:#555;">Cost: $4,000/mo | Adds: +50 Hrs/mo<br>Req: $25M Total AUM</div>
+                        <div style="font-size:10px; color:#555;">Cost: $4,000/mo | Adds: +50-80 Hrs/mo*<br>Req: $25M Total AUM<br><span style="color:#551a8b;">*Efficiency scales with book size</span></div>
                     </div>
                     <button class="staff-btn" id="btn_hire_boa" onclick="hire_staff(1)">HIRE</button>
                 </div>
@@ -240,7 +240,7 @@
                 <div class="staff-card">
                     <div>
                         <div style="font-weight:bold; font-size:13px;">Junior Associate</div>
-                        <div style="font-size:10px; color:#555;">Cost: $10,000/mo | Adds: +100 Hrs/mo<br>Req: $1M T-12</div>
+                        <div style="font-size:10px; color:#555;">Cost: $10,000/mo | Adds: +80-150 Hrs/mo*<br>Req: $1M T-12<br><span style="color:#551a8b;">*Efficiency scales with book size</span></div>
                     </div>
                     <button class="staff-btn" id="btn_hire_assoc" onclick="hire_staff(2)">HIRE</button>
                 </div>
@@ -305,6 +305,16 @@ function get_close_rate() {
     return 0.65;
 }
 
+function get_staff_efficiency_bonus() {
+    // Staff become more valuable at higher AUM levels
+    let t_aum = get_total_aum();
+    
+    if (state.staff_level === 1 && t_aum >= 50000000) return 30; // BOA adds +80 hrs instead of +50
+    if (state.staff_level === 2 && t_aum >= 50000000) return 70; // Associate adds +150 hrs instead of +100
+    
+    return 0;
+}
+
 // THE HARD CEILING: Maximum Grid Payout is 40%
 function update_grid_rate() {
     if (state.t12 >= 250000) state.grid_rate = 0.40;
@@ -337,12 +347,12 @@ function update_mix_ui() {
 function hire_staff(level) {
     if (level === 1 && get_total_aum() >= 25000000 && state.staff_level < 1) {
         state.staff_level = 1;
-        state.max_time = 150;
+        state.max_time = 130; // Base + efficiency bonus
         state.overhead = 4000;
         log("HIRED: Branch Office Administrator. Capacity increased.");
     } else if (level === 2 && state.t12 >= 1000000 && state.staff_level < 2) {
         state.staff_level = 2;
-        state.max_time = 250;
+        state.max_time = 180; // Base + efficiency bonus
         state.overhead = 14000; 
         log("HIRED: Junior Associate. Operations expanded.");
     }
@@ -366,6 +376,10 @@ function execute_month() {
     if (state.over) return;
     
     state.last_bonus = 0; // Reset visual bonus display
+    
+    // Update max_time based on current AUM and staff efficiency
+    let base_time = state.staff_level === 2 ? 180 : (state.staff_level === 1 ? 130 : 100);
+    state.max_time = base_time + get_staff_efficiency_bonus();
     
     // 1. MARKET DRIFT & SHOCKS
     let market_return = (Math.random() * 0.04) - 0.015; 
@@ -448,7 +462,7 @@ function execute_month() {
 
     // 4. FINANCIALS (Advisor Net)
     let rev_fee = state.aum_fee * 0.01 / 12;
-    let rev_trans = state.aum_trans * 0.0025 / 12;
+    let rev_trans = state.aum_trans * 0.005 / 12; // Updated from 0.0025 to 0.005 for more realistic A-share trail
     let gross_monthly_rev = rev_fee + rev_trans;
     
     state.rev_history.push(gross_monthly_rev);
@@ -530,6 +544,10 @@ function execute_month() {
 }
 
 function update_ui() {
+    // Update max_time based on current AUM and staff efficiency
+    let base_time = state.staff_level === 2 ? 180 : (state.staff_level === 1 ? 130 : 100);
+    state.max_time = base_time + get_staff_efficiency_bonus();
+    
     let used = state.t_pros + state.t_close + state.t_serv + state.t_admin + state.t_firm;
     document.getElementById('time_used').innerText = used;
     document.getElementById('time_max').innerText = state.max_time;
@@ -550,7 +568,7 @@ function update_ui() {
     document.getElementById('val_cash').innerText = "$" + Math.floor(state.cash).toLocaleString();
     document.getElementById('val_draw').innerText = "+$" + state.draw.toLocaleString();
     
-    let gross_rev = (state.aum_fee * 0.01 / 12) + (state.aum_trans * 0.0025 / 12);
+    let gross_rev = (state.aum_fee * 0.01 / 12) + (state.aum_trans * 0.005 / 12); // Updated from 0.0025 to 0.005
     document.getElementById('val_rev_gross').innerText = "+$" + Math.floor(gross_rev).toLocaleString();
     document.getElementById('val_rev_net').innerText = "+$" + Math.floor(gross_rev * state.grid_rate).toLocaleString();
     
