@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MODULE 02: THE BOOK v1.3</title>
+<style>
+    :root {
+        --win-bg: #c0c0c0; --win-high: #ffffff; --win-shadow: #808080;
+        --win-deep: #000000; --win-blue: linear-gradient(90deg, #000080, #1084d0);
+    }
+    
+    html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; background-color: #000000; font-family: 'Tahoma', sans-serif; font-size: 13px; color: #000; }
+    
+    .master-app { display: flex; flex-direction: column; height: 100%; max-width: 1250px; margin: 0 auto; padding: 8px; box-sizing: border-box; }
+    
+    ::-webkit-scrollbar { width: 14px; }
+    ::-webkit-scrollbar-track { background: #dfdfdf; border-left: 1px solid var(--win-shadow); box-shadow: inset 1px 1px 0px #000; }
+    ::-webkit-scrollbar-thumb { background: var(--win-bg); border: 1px solid var(--win-high); border-right-color: var(--win-deep); border-bottom-color: var(--win-deep); }
+    ::-webkit-scrollbar-thumb:active { background: #a0a0a0; }
+
+    .window { background: var(--win-bg); box-shadow: inset 1px 1px var(--win-high), inset -1px -1px var(--win-shadow), 1px 1px 0px 1px var(--win-deep); padding: 3px; display: flex; flex-direction: column; margin-bottom: 8px; }
+    .title-bar { background: var(--win-blue); height: 20px; padding: 2px 6px; display: flex; justify-content: space-between; align-items: center; color: white; font-weight: bold; font-size: 12px; letter-spacing: 0.5px; flex-shrink: 0; }
+    .content-area { padding: 6px; flex-grow: 1; }
+    .inset-panel { box-shadow: inset 1px 1px var(--win-shadow), inset -1px -1px var(--win-high); padding: 8px; background: #dfdfdf; }
+    
+    .header-dashboard { display: flex; gap: 8px; margin-bottom: 8px; flex-shrink: 0; height: 60px; }
+    .logo-block { background: #000; padding: 0 15px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 2px solid var(--win-shadow); box-shadow: inset 2px 2px #000, inset -2px -2px #444; flex: 1; }
+    .logo-main { color: #d4af37; font-family: 'Courier New', monospace; font-size: 28px; font-weight: bold; letter-spacing: 4px; text-shadow: 0px 0px 4px #d4af37; margin: 0; }
+    .logo-sub { color: #888; font-family: 'Tahoma', sans-serif; font-size: 10px; letter-spacing: 6px; margin-top: 2px; }
+
+    .grid-container { display: grid; grid-template-columns: 320px 1fr 320px; gap: 8px; flex-grow: 1; overflow: hidden; min-height: 0; }
+    .col { overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
+    
+    .metric-lg { font-size: 24px; font-weight: bold; font-family: 'Courier New', monospace; color: #006400; }
+    .metric-md { font-size: 16px; font-weight: bold; font-family: 'Courier New', monospace; }
+    .metric-label { font-size: 11px; color: #555; font-weight: bold; }
+    
+    .time-allocator { display: flex; align-items: center; justify-content: space-between; background: #d4d0c8; border: 1px solid var(--win-shadow); padding: 4px 6px; margin-bottom: 4px; box-shadow: inset 1px 1px var(--win-high); }
+    .time-label { width: 120px; font-weight: bold; font-size: 12px; line-height: 1.1; }
+    .time-controls { display: flex; align-items: center; gap: 8px; }
+    .btn-time { width: 24px; height: 24px; font-weight: bold; background: #dfdfdf; border: 1px solid #000; box-shadow: inset 1px 1px #fff, inset -1px -1px #888; cursor: pointer; }
+    .btn-time:active { box-shadow: inset 1px 1px #888, inset -1px -1px #fff; }
+    .time-val { width: 30px; text-align: center; font-family: 'Courier New', monospace; font-weight: bold; font-size: 14px; background: #000; color: #0f0; border: 1px solid #444; padding: 2px; }
+    
+    .execute-btn { width: 100%; height: 50px; font-size: 18px; font-weight: bold; background: #8b0000; color: #fff; border: 2px solid #000; cursor: pointer; box-shadow: inset 2px 2px #ff4c4c, inset -2px -2px #4d0000; letter-spacing: 2px; transition: 0.1s; }
+    .execute-btn:active { box-shadow: inset 2px 2px #4d0000, inset -2px -2px #ff4c4c; background: #660000; }
+    
+    .staff-card { background: #dfdfdf; border: 1px solid var(--win-shadow); padding: 8px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; box-shadow: inset 1px 1px #fff; }
+    .staff-btn { background: var(--win-bg); border: 1px solid #000; padding: 4px 8px; font-weight: bold; cursor: pointer; box-shadow: inset 1px 1px #fff, inset -1px -1px #888; }
+    .staff-btn:disabled { color: #888; cursor: not-allowed; }
+    
+    .bar-wrap { height: 12px; background: #000; border: 1px solid #444; position: relative; margin-top: 4px; box-shadow: inset 1px 1px #000; }
+    .bar-fill { height: 100%; position: absolute; left: 0; top: 0; transition: width 0.3s, background 0.3s; }
+    
+    #log { background: #fff; border: 1px solid var(--win-shadow); padding: 6px; font-family: 'Courier New', monospace; font-size: 11px; height: 130px; overflow-y: auto; line-height: 1.4; box-shadow: inset 1px 1px #888; }
+    
+    .ledger-row { display: flex; justify-content: space-between; border-bottom: 1px dotted #888; padding: 3px 0; font-family: 'Courier New', monospace; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="master-app">
+    <div class="header-dashboard">
+        <div class="logo-block">
+            <div class="logo-main">ATLAS: THE BOOK</div>
+            <div class="logo-sub">RETAIL ADVISORY TERMINAL v1.3</div>
+        </div>
+        
+        <div class="window" style="margin: 0; width: 250px; justify-content: center;">
+            <div class="content-area" style="display: flex; flex-direction: column; justify-content: center; text-align: center;">
+                <div class="metric-label">TIME_ALLOCATION</div>
+                <div style="font-size: 20px; font-weight: bold; font-family: 'Courier New';">
+                    <span id="time_used" style="color:#000;">0</span> / <span id="time_max">100</span> HRS
+                </div>
+            </div>
+        </div>
+        
+        <div class="window" style="margin: 0; width: 250px;">
+            <div class="content-area" style="padding: 0;">
+                <button class="execute-btn" onclick="execute_month()">EXECUTE MONTH</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid-container">
+        
+        <div class="col">
+            <div class="window"><div class="title-bar">ASSETS UNDER MANAGEMENT</div><div class="content-area inset-panel">
+                <div style="text-align: center; margin-bottom: 8px; border-bottom: 2px solid #888; padding-bottom: 8px;">
+                    <div class="metric-label">TOTAL BOOK (AUM)</div>
+                    <div class="metric-lg" id="val_aum_total">$0</div>
+                </div>
+                <div class="ledger-row"><span>Fee-Based (1% Yield):</span><span id="val_aum_fee" style="font-weight:bold; color:#006400;">$0</span></div>
+                <div class="ledger-row"><span>A-Shares (0.25% Yield):</span><span id="val_aum_trans" style="font-weight:bold; color:#8b0000;">$0</span></div>
+                
+                <div style="margin-top: 12px; display:flex; justify-content:space-between; align-items:flex-end;">
+                    <div>
+                        <div class="metric-label">ADVISOR TRAILING 12</div>
+                        <div class="metric-md" style="color:#000080;" id="val_t12">$0</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div class="metric-label">GRID PAYOUT</div>
+                        <div class="metric-md" style="color:#551a8b;" id="val_grid">35%</div>
+                    </div>
+                </div>
+            </div></div>
+            
+            <div class="window"><div class="title-bar" style="background:#551a8b;">CASH FLOW (SURVIVAL)</div><div class="content-area inset-panel">
+                <div class="ledger-row" style="font-weight:bold; border-bottom: 2px solid #000; margin-bottom: 4px;"><span>Personal Cash:</span><span id="val_cash" style="color:green;">$10,000</span></div>
+                
+                <div class="ledger-row" style="color:#555;"><span>Firm Draw (Subsidy):</span><span id="val_draw">+$6,000</span></div>
+                <div class="ledger-row" style="color:#555;"><span>Gross Monthly Rev:</span><span id="val_rev_gross">+$0</span></div>
+                <div class="ledger-row"><span>Net Payout (Grid):</span><span id="val_rev_net" style="color:#006400;">+$0</span></div>
+                <div class="ledger-row" style="color:#000080; font-weight:bold;"><span>Trimester Bonus:</span><span id="val_bonus">+$0</span></div>
+                <div class="ledger-row"><span>Staff Overhead:</span><span id="val_exp" style="color:#8b0000;">-$0</span></div>
+                <div class="ledger-row" style="border-top: 1px solid #000; padding-top:4px; font-weight:bold; margin-top:4px;"><span>Net Monthly Change:</span><span id="val_net">$0</span></div>
+            </div></div>
+            
+            <div class="window"><div class="title-bar" style="background:#b22222;">FIRM PATIENCE</div><div class="content-area">
+                <div style="font-size: 11px; text-align: justify; margin-bottom: 6px;">Patience drains if AUM target is missed or Firm Alignment drops. High Hustle Index or massive upfront GDC restores it.</div>
+                <div class="bar-wrap"><div class="bar-fill" id="bar_patience" style="background:#00ff00; width:100%;"></div></div>
+                <div style="text-align:right; font-family:'Courier New'; font-size:12px; font-weight:bold; margin-top:2px;" id="txt_patience">100%</div>
+                
+                <div style="margin-top: 8px; border-top: 1px dotted #888; padding-top: 4px; display:flex; justify-content:space-between;">
+                    <div>
+                        <div class="metric-label">CURRENT AUM TARGET</div>
+                        <div class="metric-md" id="val_target" style="color:#8b0000;">$2,500,000</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div class="metric-label">QTR GDC GEN.</div>
+                        <div class="metric-md" id="val_gdc" style="color:#d4af37;">$0</div>
+                    </div>
+                </div>
+                <div class="metric-label" style="text-align:center; margin-top:6px;">Month <span id="val_month">1</span></div>
+            </div></div>
+        </div>
+
+        <div class="col">
+            <div class="window" style="border: 2px solid #d4af37;"><div class="title-bar" style="background:#d4af37; color:#000;">THE GRIND (TIME MATRIX)</div><div class="content-area inset-panel">
+                
+                <div class="time-allocator">
+                    <div class="time-label">PROSPECTING<br><span style="font-size:9px; font-weight:normal; color:#555;">Hunt for raw capital</span></div>
+                    <div class="time-controls">
+                        <button class="btn-time" onclick="mod_time('pros', -5)">-</button>
+                        <div class="time-val" id="t_pros">0</div>
+                        <button class="btn-time" onclick="mod_time('pros', 5)">+</button>
+                    </div>
+                </div>
+                
+                <div class="time-allocator">
+                    <div class="time-label">CLOSING<br><span style="font-size:9px; font-weight:normal; color:#555;">Convert pipe to AUM</span></div>
+                    <div class="time-controls">
+                        <button class="btn-time" onclick="mod_time('close', -5)">-</button>
+                        <div class="time-val" id="t_close">0</div>
+                        <button class="btn-time" onclick="mod_time('close', 5)">+</button>
+                    </div>
+                </div>
+                
+                <div class="time-allocator">
+                    <div class="time-label">SERVICING<br><span style="font-size:9px; font-weight:normal; color:#555;">Handhold clients</span></div>
+                    <div class="time-controls">
+                        <button class="btn-time" onclick="mod_time('serv', -5)">-</button>
+                        <div class="time-val" id="t_serv">0</div>
+                        <button class="btn-time" onclick="mod_time('serv', 5)">+</button>
+                    </div>
+                </div>
+                
+                <div class="time-allocator">
+                    <div class="time-label">ADMIN/COMP.<br><span style="font-size:9px; font-weight:normal; color:#555;">Paperwork & Rules</span></div>
+                    <div class="time-controls">
+                        <button class="btn-time" onclick="mod_time('admin', -5)">-</button>
+                        <div class="time-val" id="t_admin">0</div>
+                        <button class="btn-time" onclick="mod_time('admin', 5)">+</button>
+                    </div>
+                </div>
+
+                <div class="time-allocator" style="background:#e6e6fa; border-color:#551a8b;">
+                    <div class="time-label" style="color:#551a8b;">FIRM INITIATIVES<br><span style="font-size:9px; font-weight:normal; color:#555;">Insurance/Lending Push</span></div>
+                    <div class="time-controls">
+                        <button class="btn-time" onclick="mod_time('firm', -5)">-</button>
+                        <div class="time-val" id="t_firm" style="color:#551a8b;">0</div>
+                        <button class="btn-time" onclick="mod_time('firm', 5)">+</button>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 12px; border-top: 2px solid #888; padding-top: 8px;">
+                    <div class="metric-label" style="text-align:center; margin-bottom:4px;">PRODUCT MIX (PIPELINE CONVERSION)</div>
+                    <div style="display:flex; justify-content:space-between; font-size:10px; font-weight:bold; color:#8b0000;">
+                        <span>A-SHARES (4% Upfront)</span><span style="color:#006400;">FEE-BASED (1% Trail)</span>
+                    </div>
+                    <input type="range" id="mix_slider" min="0" max="100" value="50" oninput="update_mix_ui()" style="width: 100%; margin: 6px 0;">
+                    <div style="display:flex; justify-content:space-between; font-family:'Courier New', monospace; font-weight:bold; font-size:12px;">
+                        <span id="txt_mix_trans" style="color:#8b0000;">50%</span><span id="txt_mix_fee" style="color:#006400;">50%</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 12px; font-family:'Courier New'; font-size: 13px; background:#fff; padding:6px; border:1px solid #888;">
+                    <div class="ledger-row"><span>Sales Pipeline:</span><span id="val_pipe" style="font-weight:bold;">$0</span></div>
+                    <div class="ledger-row"><span>Current Close Rate:</span><span id="val_crate" style="font-weight:bold;">65%</span></div>
+                    <div class="ledger-row"><span>Hustle Index:</span><span id="val_hustle" style="font-weight:bold; color:#000080;">0.00</span></div>
+                </div>
+            </div></div>
+            
+            <div class="window"><div class="title-bar">EVENT LOG</div><div class="content-area" style="padding:0;">
+                <div id="log">SYSTEM INITIALIZED. BALANCE YOUR BOOK AGAINST THE FIRM'S MARGIN.</div>
+            </div></div>
+        </div>
+
+        <div class="col">
+            <div class="window"><div class="title-bar" style="background:#4a90e2;">MARKET & FIRM ENVIRONMENT</div><div class="content-area">
+                
+                <div class="metric-label" style="display:flex; justify-content:space-between;"><span>VIX (VOLATILITY)</span><span id="txt_vix">15.0</span></div>
+                <div class="bar-wrap"><div class="bar-fill" id="bar_vix" style="background:#ff8c00; width:15%;"></div></div>
+                <div style="font-size:10px; color:#555; margin-bottom:8px; margin-top:2px;">High VIX triggers client panic.</div>
+                
+                <div class="metric-label" style="display:flex; justify-content:space-between;"><span>CLIENT SATISFACTION</span><span id="txt_sat">100%</span></div>
+                <div class="bar-wrap"><div class="bar-fill" id="bar_sat" style="background:#00ff00; width:100%;"></div></div>
+                <div style="font-size:10px; color:#555; margin-bottom:8px; margin-top:2px;">Drops rapidly if A-Shares pushed or service neglected.</div>
+                
+                <div class="metric-label" style="display:flex; justify-content:space-between;"><span>COMPLIANCE HEALTH</span><span id="txt_comp">100%</span></div>
+                <div class="bar-wrap"><div class="bar-fill" id="bar_comp" style="background:#00ff00; width:100%;"></div></div>
+                <div style="font-size:10px; color:#555; margin-bottom:8px; margin-top:2px;">Drops below 20% trigger FINRA fines.</div>
+
+                <div class="metric-label" style="display:flex; justify-content:space-between; color:#551a8b;"><span>FIRM ALIGNMENT</span><span id="txt_align">100%</span></div>
+                <div class="bar-wrap"><div class="bar-fill" id="bar_align" style="background:#551a8b; width:100%;"></div></div>
+                <div style="font-size:10px; color:#555; margin-top:2px;">Decays monthly. Restored by executing Firm Initiatives. Maximizes Trimester Bonus payouts.</div>
+                
+            </div></div>
+
+            <div class="window"><div class="title-bar" style="background:#404040;">STAFFING & INFRASTRUCTURE</div><div class="content-area inset-panel">
+                <div class="staff-card">
+                    <div>
+                        <div style="font-weight:bold; font-size:13px;">Branch Office Administrator</div>
+                        <div style="font-size:10px; color:#555;">Cost: $4,000/mo | Adds: +50 Hrs/mo<br>Req: $25M Total AUM</div>
+                    </div>
+                    <button class="staff-btn" id="btn_hire_boa" onclick="hire_staff(1)">HIRE</button>
+                </div>
+                
+                <div class="staff-card">
+                    <div>
+                        <div style="font-weight:bold; font-size:13px;">Junior Associate</div>
+                        <div style="font-size:10px; color:#555;">Cost: $10,000/mo | Adds: +100 Hrs/mo<br>Req: $1M T-12</div>
+                    </div>
+                    <button class="staff-btn" id="btn_hire_assoc" onclick="hire_staff(2)">HIRE</button>
+                </div>
+            </div></div>
+        </div>
+    </div>
+</div>
+
+<script>
+let state = {
+    month: 1,
+    aum_fee: 0,
+    aum_trans: 0,
+    cash: 10000,
+    draw: 6000,
+    patience: 100,
+    pipeline: 0,
+    
+    sat: 100,
+    comp: 100,
+    align: 100,
+    vix: 15,
+    
+    t_pros: 0, t_close: 0, t_serv: 0, t_admin: 0, t_firm: 0,
+    max_time: 100,
+    staff_level: 0, 
+    overhead: 0,
+    
+    rev_history: [],
+    qtr_gdc: 0,
+    t12: 0,
+    grid_rate: 0.35,
+    last_bonus: 0,
+    hustle: 0,
+    
+    over: false
+};
+
+function formatMoney(n) {
+    if (n >= 1e6) return "$" + (n / 1e6).toFixed(2) + "M";
+    if (n >= 1e3) return "$" + (n / 1e3).toFixed(0) + "k";
+    return "$" + Math.floor(n).toLocaleString();
+}
+
+function get_total_aum() {
+    return state.aum_fee + state.aum_trans;
+}
+
+function get_target_aum() {
+    if (state.month <= 6) return 2500000;
+    if (state.month <= 12) return 5000000;
+    if (state.month <= 18) return 10000000;
+    if (state.month <= 24) return 15000000;
+    if (state.month <= 36) return 25000000;
+    return 50000000;
+}
+
+function get_close_rate() {
+    let t_aum = get_total_aum();
+    if (state.staff_level === 2 || t_aum >= 30000000) return 0.99;
+    if (t_aum >= 10000000) return 0.85;
+    return 0.65;
+}
+
+// THE HARD CEILING: Maximum Grid Payout is 40%
+function update_grid_rate() {
+    if (state.t12 >= 250000) state.grid_rate = 0.40;
+    else state.grid_rate = 0.35;
+}
+
+function mod_time(type, delta) {
+    if (state.over) return;
+    let current_total = state.t_pros + state.t_close + state.t_serv + state.t_admin + state.t_firm;
+    
+    if (delta > 0 && current_total + delta > state.max_time) {
+        delta = state.max_time - current_total; 
+    }
+    if (state["t_" + type] + delta < 0) {
+        delta = -state["t_" + type]; 
+    }
+    
+    state["t_" + type] += delta;
+    update_ui();
+}
+
+function update_mix_ui() {
+    let slider = document.getElementById('mix_slider');
+    let fee_val = slider.value;
+    let trans_val = 100 - fee_val;
+    document.getElementById('txt_mix_fee').innerText = fee_val + "%";
+    document.getElementById('txt_mix_trans').innerText = trans_val + "%";
+}
+
+function hire_staff(level) {
+    if (level === 1 && get_total_aum() >= 25000000 && state.staff_level < 1) {
+        state.staff_level = 1;
+        state.max_time = 150;
+        state.overhead = 4000;
+        log("HIRED: Branch Office Administrator. Capacity increased.");
+    } else if (level === 2 && state.t12 >= 1000000 && state.staff_level < 2) {
+        state.staff_level = 2;
+        state.max_time = 250;
+        state.overhead = 14000; 
+        log("HIRED: Junior Associate. Operations expanded.");
+    }
+    update_ui();
+}
+
+function logger(msg) {
+    const l = document.getElementById('log');
+    let div = document.createElement('div');
+    div.innerText = "> Month " + state.month + ": " + msg;
+    l.insertBefore(div, l.firstChild);
+}
+function log(msg) {
+    const l = document.getElementById('log');
+    let div = document.createElement('div');
+    div.innerText = "> " + msg;
+    l.insertBefore(div, l.firstChild);
+}
+
+function execute_month() {
+    if (state.over) return;
+    
+    state.last_bonus = 0; // Reset visual bonus display
+    
+    // 1. MARKET DRIFT & SHOCKS
+    let market_return = (Math.random() * 0.04) - 0.015; 
+    if (Math.random() < 0.15) { 
+        state.vix = Math.floor(35 + Math.random() * 25);
+        market_return = -(0.05 + Math.random() * 0.15); 
+        log("MARKET SHOCK: VIX Spiked to " + state.vix + ". Clients terrified.");
+    } else {
+        state.vix = Math.floor(12 + Math.random() * 8);
+    }
+    
+    state.aum_fee = Math.max(0, state.aum_fee * (1 + market_return));
+    state.aum_trans = Math.max(0, state.aum_trans * (1 + market_return));
+
+    // 2. ACTION UNIT PROCESSING
+    let t_aum = get_total_aum();
+    let pros_mult = 20000 + (t_aum * 0.001); 
+    let new_pipe = state.t_pros * pros_mult;
+    state.pipeline += new_pipe;
+    
+    let close_capacity = state.t_close * 150000; 
+    let close_rate = get_close_rate();
+    let closed_total = Math.min(state.pipeline, close_capacity) * close_rate;
+    
+    let slider = document.getElementById('mix_slider');
+    let fee_pct = slider ? slider.value / 100 : 0.5;
+    let trans_pct = 1 - fee_pct;
+    
+    let new_fee = closed_total * fee_pct;
+    let new_trans = closed_total * trans_pct;
+    
+    state.pipeline -= closed_total;
+    state.pipeline = Math.max(0, state.pipeline);
+    
+    state.aum_fee += new_fee;
+    state.aum_trans += new_trans;
+    
+    // FIRM INITIATIVES & ALIGNMENT
+    state.align = Math.max(0, state.align - 3); 
+    if (state.t_firm > 0) {
+        state.align = Math.min(100, state.align + (state.t_firm * 1.5));
+        let init_bonus = state.t_firm * 400; 
+        state.qtr_gdc += init_bonus;
+    }
+    
+    // FIRM GDC CALCULATION
+    let firm_gdc = (new_fee * 0.01) + (new_trans * 0.04);
+    state.qtr_gdc += firm_gdc;
+    
+    let req_serv = Math.floor(t_aum / 500000); 
+    let req_admin = Math.floor(t_aum / 1000000) + 5; 
+    
+    let trans_drag = (new_trans / 100000) * 0.5;
+    state.sat -= trans_drag;
+    
+    if (state.t_serv < req_serv) {
+        state.sat = Math.max(0, state.sat - ((req_serv - state.t_serv) * 2));
+    } else {
+        state.sat = Math.min(100, state.sat + ((state.t_serv - req_serv) * 1));
+    }
+    
+    if (state.t_admin < req_admin) {
+        state.comp = Math.max(0, state.comp - ((req_admin - state.t_admin) * 3));
+    } else {
+        state.comp = Math.min(100, state.comp + ((state.t_admin - req_admin) * 1));
+    }
+
+    // 3. CHURN (Psychology x Market)
+    let fear_factor = (state.vix / 100);
+    let neglect_factor = ((100 - state.sat) / 100);
+    let churn_rate = fear_factor * neglect_factor * 0.5; 
+    
+    let lost_fee = state.aum_fee * churn_rate;
+    let lost_trans = state.aum_trans * churn_rate;
+    
+    state.aum_fee -= lost_fee;
+    state.aum_trans -= lost_trans;
+    
+    if ((lost_fee + lost_trans) > 100000) logger("Client Panic: Lost " + formatMoney(lost_fee + lost_trans) + " in AUM due to market fear/neglect.");
+
+    // 4. FINANCIALS (Advisor Net)
+    let rev_fee = state.aum_fee * 0.01 / 12;
+    let rev_trans = state.aum_trans * 0.0025 / 12;
+    let gross_monthly_rev = rev_fee + rev_trans;
+    
+    state.rev_history.push(gross_monthly_rev);
+    if (state.rev_history.length > 12) state.rev_history.shift();
+    
+    state.t12 = state.rev_history.reduce((a, b) => a + b, 0) * 12;
+    update_grid_rate();
+    
+    let net_payout = gross_monthly_rev * state.grid_rate;
+    let net_cash = net_payout + state.draw - state.overhead - 2000; 
+    state.cash += net_cash;
+    
+    // TRIMESTER PROFITABILITY BONUS
+    if (state.month > 1 && state.month % 4 === 0) {
+        let current_aum = get_total_aum();
+        if (current_aum >= 50000000) {
+            let base_bonus = (current_aum / 200000000) * 40000;
+            // The Golden Handcuffs: Bonus weighted heavily by Firm Alignment
+            let actual_bonus = base_bonus * (state.align / 100);
+            state.last_bonus = actual_bonus;
+            state.cash += actual_bonus;
+            logger("TRIMESTER BONUS: Branch profitability payout of $" + Math.floor(actual_bonus).toLocaleString() + " executed.");
+        }
+    }
+    
+    // Draw Decay
+    state.draw = Math.max(0, state.draw - 250);
+
+    // FINRA Fine
+    if (state.comp < 20) {
+        let fine = 15000;
+        state.cash -= fine;
+        state.comp = 60;
+        logger("FINRA AUDIT: Compliance failure. Fined $" + fine + ".");
+    }
+
+    // 5. QUARTERLY REVIEW
+    state.hustle = (state.t_pros + state.t_close) / state.max_time;
+    let target_aum = get_target_aum();
+    
+    if (state.month > 1 && state.month % 3 === 0) {
+        t_aum = get_total_aum();
+        if (state.align < 40) {
+            state.patience -= 15;
+            logger("QTR REVIEW: Firm Alignment critically low. Branch Manager penalizing patience.");
+        }
+        
+        if (t_aum < target_aum) {
+            if (state.qtr_gdc > 15000) {
+                logger("QTR REVIEW: AUM behind target, but Firm Production (GDC) high. Manager satisfied.");
+                state.patience = Math.min(100, state.patience + 5);
+            } else if (state.hustle < 0.6) {
+                state.patience -= 25;
+                logger("QTR REVIEW: Missed AUM target. Low activity detected. Patience dropping.");
+            } else {
+                logger("QTR REVIEW: Missed target, but Hustle Index high. Grace granted.");
+            }
+        } else {
+            state.patience = Math.min(100, state.patience + 10);
+        }
+        state.qtr_gdc = 0; 
+    }
+
+    state.month++;
+    
+    // Reset time for next turn
+    state.t_pros = 0; state.t_close = 0; state.t_serv = 0; state.t_admin = 0; state.t_firm = 0;
+    
+    update_ui();
+    
+    // FAIL STATES
+    if (state.cash < 0) {
+        alert("GAME OVER: Bankrupt. You failed to build enough net recurring revenue to survive the Draw decay.");
+        state.over = true;
+    } else if (state.patience <= 0) {
+        alert("GAME OVER: Terminated by Branch Manager for low production and poor firm alignment.");
+        state.over = true;
+    }
+}
+
+function update_ui() {
+    let used = state.t_pros + state.t_close + state.t_serv + state.t_admin + state.t_firm;
+    document.getElementById('time_used').innerText = used;
+    document.getElementById('time_max').innerText = state.max_time;
+    
+    document.getElementById('t_pros').innerText = state.t_pros;
+    document.getElementById('t_close').innerText = state.t_close;
+    document.getElementById('t_serv').innerText = state.t_serv;
+    document.getElementById('t_admin').innerText = state.t_admin;
+    document.getElementById('t_firm').innerText = state.t_firm;
+    
+    document.getElementById('val_aum_total').innerText = formatMoney(get_total_aum());
+    document.getElementById('val_aum_fee').innerText = formatMoney(state.aum_fee);
+    document.getElementById('val_aum_trans').innerText = formatMoney(state.aum_trans);
+    
+    document.getElementById('val_t12').innerText = formatMoney(state.t12);
+    document.getElementById('val_grid').innerText = Math.round(state.grid_rate * 100) + "%";
+    
+    document.getElementById('val_cash').innerText = "$" + Math.floor(state.cash).toLocaleString();
+    document.getElementById('val_draw').innerText = "+$" + state.draw.toLocaleString();
+    
+    let gross_rev = (state.aum_fee * 0.01 / 12) + (state.aum_trans * 0.0025 / 12);
+    document.getElementById('val_rev_gross').innerText = "+$" + Math.floor(gross_rev).toLocaleString();
+    document.getElementById('val_rev_net').innerText = "+$" + Math.floor(gross_rev * state.grid_rate).toLocaleString();
+    
+    let bonus_el = document.getElementById('val_bonus');
+    bonus_el.innerText = "+$" + Math.floor(state.last_bonus).toLocaleString();
+    bonus_el.style.color = state.last_bonus > 0 ? "#00ff00" : "#000080";
+    if (state.last_bonus > 0) bonus_el.style.background = "#000"; else bonus_el.style.background = "transparent";
+    
+    document.getElementById('val_exp').innerText = "-$" + state.overhead.toLocaleString();
+    
+    let net = (gross_rev * state.grid_rate) + state.draw + state.last_bonus - state.overhead - 2000;
+    let net_el = document.getElementById('val_net');
+    net_el.innerText = (net >= 0 ? "+$" : "-$") + Math.abs(Math.floor(net)).toLocaleString();
+    net_el.style.color = net >= 0 ? "#006400" : "#8b0000";
+    
+    document.getElementById('val_pipe').innerText = formatMoney(state.pipeline);
+    document.getElementById('val_crate').innerText = Math.round(get_close_rate() * 100) + "%";
+    document.getElementById('val_hustle').innerText = state.hustle.toFixed(2);
+    
+    let pat_fill = document.getElementById('bar_patience');
+    pat_fill.style.width = state.patience + "%";
+    pat_fill.style.background = state.patience < 40 ? "#ff0000" : "#00ff00";
+    document.getElementById('txt_patience').innerText = state.patience + "%";
+    
+    document.getElementById('val_target').innerText = formatMoney(get_target_aum());
+    document.getElementById('val_gdc').innerText = "$" + Math.floor(state.qtr_gdc).toLocaleString();
+    document.getElementById('val_month').innerText = state.month;
+    
+    document.getElementById('txt_vix').innerText = state.vix.toFixed(1);
+    document.getElementById('bar_vix').style.width = Math.min(100, (state.vix / 80) * 100) + "%";
+    
+    document.getElementById('txt_sat').innerText = Math.round(state.sat) + "%";
+    let s_fill = document.getElementById('bar_sat');
+    s_fill.style.width = state.sat + "%";
+    s_fill.style.background = state.sat < 50 ? "#ff0000" : "#00ff00";
+    
+    document.getElementById('txt_comp').innerText = Math.round(state.comp) + "%";
+    let c_fill = document.getElementById('bar_comp');
+    c_fill.style.width = state.comp + "%";
+    c_fill.style.background = state.comp < 30 ? "#ff0000" : "#00ff00";
+    
+    document.getElementById('txt_align').innerText = Math.round(state.align) + "%";
+    let a_fill = document.getElementById('bar_align');
+    a_fill.style.width = state.align + "%";
+    a_fill.style.background = state.align < 40 ? "#ff0000" : "#551a8b";
+    
+    document.getElementById('btn_hire_boa').disabled = (get_total_aum() < 25000000 || state.staff_level >= 1);
+    if(state.staff_level >= 1) document.getElementById('btn_hire_boa').innerText = "HIRED";
+    
+    document.getElementById('btn_hire_assoc').disabled = (state.t12 < 1000000 || state.staff_level >= 2);
+    if(state.staff_level >= 2) document.getElementById('btn_hire_assoc').innerText = "HIRED";
+    
+    update_mix_ui();
+}
+
+window.addEventListener('load', update_ui);
+</script>
+</body>
+</html>
